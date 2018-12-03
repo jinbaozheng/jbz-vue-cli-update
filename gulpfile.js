@@ -50,7 +50,6 @@ function updatePackage(cb){
                 'smart-build-pro': 'jbz-oss-build pro',
                 'build': 'vue-cli-service build'
             }
-            console.log(data);
             return JSON.stringify({
                 ...data
             }, null, 2);
@@ -109,7 +108,7 @@ function updateNodeModule(cb){
     cb();
 }
 
-exports.default = series(updatePackage/*, updateConfig, updateDelete, updateNodeModule*/);
+exports.default = series(updatePackage, updateConfig, updateDelete, updateNodeModule);
 exports['update:package'] = updatePackage
 exports['update:config'] = updateConfig
 exports['update:delete'] = updateDelete
