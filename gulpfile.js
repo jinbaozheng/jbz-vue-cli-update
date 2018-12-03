@@ -3,12 +3,14 @@
  */
 const path = require('path');
 const resolve = path.resolve;
+const chalk = require('chalk');
 const del = require('del');
 const fs = require('fs');
 const { series, task } = gulp = require('gulp');
 const rename = require('gulp-rename');
 const replace = require('gulp-replace');
 const clean = require('gulp-clean');
+const yarn = require('gulp-yarn');
 const __torootdir = path.resolve(process.cwd(), './');
 const {vuecli2_dependencies, vuecli2_dev_dependencies, vuecli3_dependencies, vuecli3_dev_dependencies} = require('./constant')
 const jsonTransform = require('./handle_json');
@@ -20,6 +22,7 @@ const readFile = (filePath) => {
 }
 
 function updatePackage(cb){
+    console.log(chalk.green('更新package.json中...'))
     gulp.src(resolve(__torootdir, './package.json'))
         .pipe(jsonTransform(function(data, file) {
             let deps = data.dependencies;
@@ -59,6 +62,7 @@ function updatePackage(cb){
 }
 
 function updateConfig(cb){
+    console.log(chalk.green('更新配置中...'));
     gulp.src(resolve(__torootdir, './index.html'), {
         allowEmpty: true
     }).pipe(clean({
@@ -77,8 +81,11 @@ function updateConfig(cb){
 }
 
 function updateDelete(cb){
-    del.sync([resolve(__torootdir, './build'), resolve(__torootdir, './config')]);
-    del.sync([resolve(__torootdir, './config')]);
+    console.log(chalk.green('清理旧版本文件中...'));
+    // del.sync([resolve(__torootdir, './build'), resolve(__torootdir, './config')]);
+    del.sync([resolve(__torootdir, './config')], {
+        force: true
+    });
     del.sync([resolve(__torootdir, './dist_beta'), resolve(__torootdir, './dist_pro'), resolve(__torootdir, './dist')], {
         force: true
     });
@@ -92,7 +99,16 @@ function updateDelete(cb){
     cb()
 }
 
-exports.default = series(updatePackage, updateConfig, updateDelete);
+function updateNodeModule(cb){
+    console.log(chalk.green('更新node_modules中...'));
+    del.sync(resolve(__torootdir, './node_modules'));
+    gulp.src([resolve(__torootdir, './package.json')])
+        .pipe(yarn());
+    console.log(chalk.green('更新完成'));
+    cb();
+}
+
+exports.default = series(updatePackage, updateConfig, updateDelete, updateNodeModule);
 exports['update:package'] = updatePackage
 exports['update:config'] = updateConfig
 exports['update:delete'] = updateDelete
